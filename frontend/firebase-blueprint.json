@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user profile in the application.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["email", "createdAt", "updatedAt"]
+    },
+    "Bar": {
+      "title": "Bar",
+      "description": "A single bar/verse stored in the repository.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "text": { "type": "string" },
+        "dialect": { "type": "string" },
+        "isFavorite": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "number" },
+        "deleted": { "type": "boolean", "description": "Soft delete flag" },
+        "tags": { 
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["userId", "serialNumber", "text", "dialect", "isFavorite", "createdAt", "updatedAt"]
+    },
+    "StoreState": {
+      "title": "Store State",
+      "description": "Offline-first synchronized state fragments for various Zustand stores.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "stateData": { "type": "string", "description": "Stringified JSON of the store state" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "stateData", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile document."
+    },
+    "/users/{userId}/bars/{barId}": {
+      "schema": { "$ref": "#/entities/Bar" },
+      "description": "Individual bars (repository items) owned by the user."
+    },
+    "/users/{userId}/states/{storeName}": {
+      "schema": { "$ref": "#/entities/StoreState" },
+      "description": "Serialized settings or states for zustand stores (e.g. editor, repository config, memory)."
+    }
+  }
+}

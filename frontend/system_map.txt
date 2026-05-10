@@ -1,0 +1,33 @@
+.
+├── DEVELOPMENT.md
+├── src
+│   ├── App.tsx
+│   ├── components
+│   │   ├── academy
+│   │   │   ├── AcademyCard.tsx
+│   │   │   ├── ProtocolWorkshopViewWrapper.tsx
+│   │   │   └── ResultViews.tsx
+│   │   ├── BarCard.tsx
+│   │   ├── BarRepositoryDisplay.tsx
+│   │   ├── ChatAssistant.tsx
+│   │   ├── RapAcademy.tsx
+│   │   ├── RapAcademy2.tsx
+│   │   └── ... (and other UI components)
+│   ├── constants
+│   │   ├── academyTechs.ts
+│   │   └── index.ts
+│   ├── hooks
+│   │   └── useSyncStatus.ts
+│   ├── services
+│   │   ├── firebaseSync.ts
+│   │   ├── geminiService.ts
+│   │   └── moraEngine.ts
+│   ├── store
+│   │   └── repositoryStore.ts
+│   ├── types
+│   │   ├── accent.ts
+│   │   └── index.ts
+│   ├── index.css
+│   └── main.tsx
+├── package.json
+└── vite.config.ts

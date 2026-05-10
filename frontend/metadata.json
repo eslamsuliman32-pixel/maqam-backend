@@ -1,0 +1,7 @@
+{
+  "name": "MAQAM v2.0",
+  "description": "منصة احترافية لإنتاج الراب العربي تعتمد على منهجية الدمج الصوتي–الموسيقي والذكاء الاصطناعي.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

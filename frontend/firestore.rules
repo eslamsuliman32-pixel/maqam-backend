@@ -1,0 +1,128 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Core Primitives
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // 2. Entity Validators
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'createdAt', 'updatedAt']) 
+        && data.keys().size() <= 4 // Support optionally adding something like 'isVerified' later
+        && data.email is string && data.email.size() <= 256
+        && data.createdAt is number
+        && data.updatedAt is number
+        && data.createdAt == request.time.toMillis() // Strict timestamp on creation
+    }
+
+    function isValidBar(data) {
+      // Validating a new bar vs update. During create, specific fields must exist.
+      return data.keys().hasAll(['userId', 'serialNumber', 'text', 'dialect', 'isFavorite', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.serialNumber is string && data.serialNumber.size() <= 100
+        && data.text is string && data.text.size() <= 5000
+        && data.dialect is string && data.dialect.size() <= 50
+        && data.isFavorite is bool
+        && data.createdAt is string && data.createdAt.size() <= 50
+        && data.updatedAt is number
+        // We do not enforce strict `.size() == 7` because 'tags' and analysis metadata might be attached.
+        // We check bounds of arrays if present
+        && (!('tags' in data.keys()) || (data.tags is list && data.tags.size() <= 100))
+        && (!('deleted' in data.keys()) || data.deleted is bool);
+    }
+
+    function isValidStoreState(data) {
+      return data.keys().hasAll(['userId', 'payload'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.payload is string && data.payload.size() <= 1000000;
+    }
+
+    // 3. User Document
+    match /users/{userId} {
+      // Only the user themselves can read/write their document
+      // isValidId guards against ID poisoning
+      allow read: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      
+      allow create: if isSignedIn() 
+        && isValidId(userId) 
+        && request.auth.uid == userId 
+        && isValidUser(incoming());
+
+      allow update: if isSignedIn() 
+        && isValidId(userId) 
+        && request.auth.uid == userId 
+        && incoming().diff(existing()).affectedKeys().hasOnly(['updatedAt', 'email'])
+        && incoming().updatedAt == request.time.toMillis();
+      
+      // 4. Bars Subcollection
+      match /bars/{barId} {
+        allow read: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+        allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId; // Parent restricts this to the user's subcollection
+        
+        allow create: if isSignedIn() 
+          && isValidId(userId) 
+          && request.auth.uid == userId 
+          && isValidId(barId)
+          && isValidBar(incoming())
+          && incoming().updatedAt == request.time.toMillis();
+
+        allow update: if isSignedIn()
+          && isValidId(userId)
+          && request.auth.uid == userId
+          && isValidId(barId)
+          && incoming().userId == existing().userId
+          && incoming().updatedAt == request.time.toMillis()
+          && incoming().text is string && incoming().text.size() <= 5000;
+          
+        allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && isValidId(barId);
+      }
+
+      // 5. Store States Subcollection
+      match /stateVault/{namespace}/documents/{storeName} {
+        allow read: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+        
+        allow create: if isSignedIn() 
+          && isValidId(userId) 
+          && isValidId(storeName)
+          && request.auth.uid == userId 
+          && isValidStoreState(incoming());
+
+        allow update: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(storeName)
+          && request.auth.uid == userId
+          && incoming().userId == existing().userId
+          && incoming().payload is string && incoming().payload.size() <= 1000000;
+          
+        // 6. Snapshots Subcollection for Historical Versioning
+        match /snapshots/{snapshotId} {
+          allow read: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+          allow list: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+          
+          allow create: if isSignedIn()
+            && isValidId(userId)
+            && isValidId(storeName)
+            && isValidId(snapshotId)
+            && request.auth.uid == userId
+            && incoming().userId == userId
+            && incoming().payload is string && incoming().payload.size() <= 1000000
+            && incoming().snapshotId == snapshotId;
+            
+          allow update: if false; // Snapshots are immutable
+          allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId; // Optional manual cleanup
+        }
+      }
+    }
+  }
+}
