@@ -1,228 +1,222 @@
-import React, { useMemo } from 'react';
-import { Crosshair, Maximize, GitMerge, Activity, Layers, Cpu, Target, Zap, Info, ChevronRight, CheckCircle2, Save } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import {
+  Layout, Layers, Target, Hash, Zap, TrendingUp,
+  BarChart2, Music2, Mic2, ChevronRight, Sparkles, RefreshCw
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface BeatBlueprintViewProps {
-  blueprint: any;
-  onSave?: () => void;
-}
+const STRUCTURE_BLOCKS = [
+  { id: 'intro',   label: 'INTRO',   bars: 4,  color: 'violet' },
+  { id: 'verse1',  label: 'VERSE 1', bars: 16, color: 'amber' },
+  { id: 'hook',    label: 'HOOK',    bars: 8,  color: 'emerald' },
+  { id: 'verse2',  label: 'VERSE 2', bars: 16, color: 'amber' },
+  { id: 'hook2',   label: 'HOOK',    bars: 8,  color: 'emerald' },
+  { id: 'bridge',  label: 'BRIDGE',  bars: 8,  color: 'blue' },
+  { id: 'outro',   label: 'OUTRO',   bars: 4,  color: 'violet' },
+] as const;
 
-export const BeatBlueprintView: React.FC<BeatBlueprintViewProps> = ({ blueprint, onSave }) => {
-  if (!blueprint) return null;
+const RHYME_SCHEMES = ['AABB', 'ABAB', 'AAAA', 'ABBA', 'ABCABC', 'Free'];
+const BPM_PRESETS = [70, 80, 85, 90, 95, 100, 105, 110, 120, 140];
 
-  const totalSteps = 16;
-  const drumMap = blueprint?.transientMap || {
-    kickPositions: [0, 8, 10],
-    snarePositions: [4, 12],
-    hatPattern: { positions: [0, 2, 4, 6, 8, 10, 12, 14] }
-  };
+export function BeatBlueprintView() {
+  const [bpm,        setBpm]    = useState(90);
+  const [scheme,     setScheme] = useState('AABB');
+  const [activeBlock, setBlock] = useState<string | null>(null);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 font-mono selection:bg-[#00ff00]/30 text-white" dir="ltr">
-      
-      {/* FLOW ARCHITECT MASTER DASHBOARD */}
-      <div className="bg-[#0a0a0a] border border-[#1f2937] rounded-xl p-8 relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+    <div className="space-y-5">
+
+      {/* ── Top Controls ── */}
+      <div className="grid grid-cols-3 gap-4">
         
-        {/* Blueprint Grid Background */}
-        <div 
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, #1f2937 1px, transparent 1px),
-              linear-gradient(to bottom, #1f2937 1px, transparent 1px)
-            `,
-            backgroundSize: '30px 30px'
-          }}
-        />
-
-        <div className="relative z-10 flex flex-col gap-12">
-          
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#1f2937] pb-6 gap-6">
-            <div className="space-y-2 text-left">
-              <div className="text-[#00ff00] text-[10px] uppercase tracking-widest flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#00ff00] rounded-full animate-pulse" />
-                System: Active // Version: 3.0 (Master Blueprint)
-              </div>
-              <h2 className="text-4xl font-bold text-white tracking-tight font-sans uppercase">
-                Flow Architect <span className="text-[#00ffff]">v3.0</span>
-              </h2>
-              <h3 className="text-xl text-[#00ff00] font-bold font-sans" dir="rtl">
-                المخطط الهندسي الموحد (Blueprint)
-              </h3>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {onSave && (
-                <button 
-                  onClick={onSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#00ff00]/10 border border-[#00ff00]/30 text-[#00ff00] rounded-lg text-xs font-bold hover:bg-[#00ff00]/20 transition-all"
-                >
-                  <Save className="w-4 h-4" /> حفظ التقدم
-                </button>
-              )}
-              <div className="flex gap-8 text-sm bg-[#111827] p-4 rounded-lg border border-[#1f2937]">
-                <div className="flex flex-col items-end">
-                  <span className="text-[#6b7280] text-[10px] uppercase tracking-widest">BPM Lock</span>
-                  <span className="text-[#00ffff] font-bold text-2xl">{blueprint.temporalGrid?.bpm || blueprint.bpm || 90}</span>
-                </div>
-                <div className="w-px bg-[#1f2937]" />
-                <div className="flex flex-col items-end">
-                  <span className="text-[#6b7280] text-[10px] uppercase tracking-widest">Key</span>
-                  <span className="text-[#ff00ff] font-bold text-2xl uppercase">{blueprint.spectralProfile?.key || blueprint.key || 'C'}</span>
-                </div>
-              </div>
-            </div>
+        {/* BPM Card */}
+        <div className="bg-[#0D1017] border border-white/[0.05] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Music2 className="w-3.5 h-3.5 text-amber-400/60" />
+            <span className="text-[9px] font-bold text-amber-400/60 uppercase tracking-widest">BPM_TEMPO</span>
           </div>
-
-          {/* Module 1: Rhythmic Coordinate Matrix v2.0 (Integrated & Multi-Property) */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-center text-[10px] text-[#6b7280] uppercase tracking-widest">
-              <span className="font-sans text-sm text-white font-bold flex items-center gap-2" dir="rtl">
-                <Target className="w-4 h-4 text-[#00ffff]" /> مصفوفة الإحداثيات الإيقاعية v2.0 (متعددة الخواص)
-              </span>
-              <span>Precision: 1/16 Note • Multi-Layer Analysis</span>
-            </div>
-
-            <div className="bg-[#111827] border border-[#1f2937] rounded-lg p-6">
-              <div className="grid grid-cols-8 md:grid-cols-16 gap-1.5">
-                {Array.from({ length: totalSteps }).map((_, i) => {
-                  const isKick = drumMap.kickPositions?.includes(i);
-                  const isSnare = drumMap.snarePositions?.includes(i);
-                  const isHihat = drumMap.hatPattern?.positions?.includes(i);
-                  const energy = (isKick ? 0.8 : 0) + (isSnare ? 0.9 : 0) + (isHihat ? 0.3 : 0.1);
-                  const beatNum = Math.floor(i / 4) + 1;
-                  const subBeat = (i % 4) + 1;
-                  
-                  return (
-                    <div key={i} className="flex flex-col gap-1">
-                      <div className="text-[7px] font-mono text-[#6b7280] text-center mb-1">
-                        {beatNum}.{subBeat}
-                      </div>
-                      <div
-                        className={`
-                          relative h-16 rounded border flex flex-col items-center justify-center gap-1 transition-all duration-300
-                          ${i % 4 === 0 ? 'bg-[#1f2937] border-[#00ff00]/40' : 'bg-[#0a0a0a] border-[#1f2937]'}
-                        `}
-                      >
-                        {/* Energy Bar */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1f2937] overflow-hidden">
-                          <div 
-                            className="h-full bg-[#00ffff]/40" 
-                            style={{ width: `${Math.min(100, energy * 100)}%` }} 
-                          />
-                        </div>
-
-                        <div className="absolute top-1 flex gap-0.5">
-                          {isKick && <div className="w-1.5 h-1.5 rounded-full bg-[#00ffff] shadow-[0_0_5px_#00ffff]" />}
-                          {isSnare && <div className="w-1.5 h-1.5 rounded-full bg-[#ff00ff] shadow-[0_0_5px_#ff00ff]" />}
-                        </div>
-                        {isHihat && <div className="w-3 h-0.5 bg-[#6b7280]/60 rounded-full" />}
-                        
-                        {/* Intensity Indicator */}
-                        <div className={`text-[6px] font-bold ${energy > 0.5 ? 'text-[#00ff00]' : 'text-[#6b7280]'}`}>
-                          {energy > 0.8 ? 'PEAK' : energy > 0.4 ? 'MID' : 'LOW'}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          <div className="flex items-baseline gap-2 mb-4">
+            <span className="text-5xl font-black text-white tabular-nums">{bpm}</span>
+            <span className="text-sm text-white/20 font-mono">BPM</span>
           </div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {BPM_PRESETS.map(b => (
+              <button
+                key={b}
+                onClick={() => setBpm(b)}
+                className={`py-1.5 rounded-lg text-[9px] font-bold transition-all ${
+                  bpm === b ? 'bg-amber-500/90 text-black' : 'bg-white/[0.04] text-white/25 hover:bg-white/[0.08] hover:text-white/50'
+                }`}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Module 2: Syllable Geometry */}
-            <div className="space-y-4">
-              <h3 className="font-sans text-sm text-white font-bold flex items-center gap-2" dir="rtl">
-                <Maximize className="w-4 h-4 text-[#00ff00]" /> هندسة المقاطع (Syllable Geometry)
-              </h3>
-              <div className="bg-[#111827] border border-[#1f2937] rounded-lg p-6">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-[#9ca3af]">Target Density</span>
-                    <span className="text-[#00ffff] font-bold">
-                      {blueprint.styleFingerprint?.complexity ? Math.floor(blueprint.styleFingerprint.complexity * 16) : 12} Syllables
-                    </span>
-                  </div>
-                  <div className="flex gap-1 h-6">
-                    {[...Array(16)].map((_, i) => (
-                      <div key={i} className={`flex-1 rounded-sm border ${i < 12 ? 'bg-[#00ff00]/20 border-[#00ff00]/40' : 'bg-[#1f2937] border-[#374151]'}`} />
-                    ))}
-                  </div>
+        {/* Rhyme Scheme */}
+        <div className="bg-[#0D1017] border border-white/[0.05] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Hash className="w-3.5 h-3.5 text-violet-400/60" />
+            <span className="text-[9px] font-bold text-violet-400/60 uppercase tracking-widest">RHYME_SCHEME</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {RHYME_SCHEMES.map(s => (
+              <button
+                key={s}
+                onClick={() => setScheme(s)}
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold font-mono transition-all ${
+                  scheme === s
+                    ? 'bg-violet-500/20 border border-violet-500/30 text-violet-300'
+                    : 'bg-white/[0.03] border border-white/[0.05] text-white/25 hover:text-white/50'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <RhymePreview scheme={scheme} />
+        </div>
+
+        {/* Stats */}
+        <div className="bg-[#0D1017] border border-white/[0.05] rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart2 className="w-3.5 h-3.5 text-emerald-400/60" />
+            <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-widest">TRACK_STATS</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'Total Bars',  value: STRUCTURE_BLOCKS.reduce((s, b) => s + b.bars, 0), unit: 'bars' },
+              { label: 'Duration',    value: Math.round(STRUCTURE_BLOCKS.reduce((s, b) => s + b.bars, 0) * (60 / bpm) * 4), unit: 'sec' },
+              { label: 'Complexity',  value: 74, unit: '%' },
+            ].map(({ label, value, unit }) => (
+              <div key={label} className="flex items-center justify-between">
+                <span className="text-[10px] text-white/25">{label}</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-black text-white tabular-nums">{value}</span>
+                  <span className="text-[9px] text-white/20 font-mono">{unit}</span>
                 </div>
               </div>
-            </div>
-
-            {/* Module 3: Rhyme Data Chain */}
-            <div className="space-y-4">
-              <h3 className="font-sans text-sm text-white font-bold flex items-center gap-2" dir="rtl">
-                <GitMerge className="w-4 h-4 text-[#ff00ff]" /> سلسلة بيانات القوافي (Rhyme Data Chain)
-              </h3>
-              <div className="bg-[#111827] border border-[#1f2937] rounded-lg p-6">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-[#9ca3af]">Phoneme Anchors</span>
-                    <span className="text-[#00ff00] font-bold font-sans" dir="rtl">
-                      {blueprint.styleFingerprint?.arabicStyleMarkers?.join(' - ') || 'ب - ق - د'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {['A', 'A', 'B', 'B'].map((r, i) => (
-                      <div key={i} className={`flex-1 h-8 rounded flex items-center justify-center font-bold border ${r === 'A' ? 'bg-[#00ffff]/10 border-[#00ffff]' : 'bg-[#ff00ff]/10 border-[#ff00ff]'}`}>
-                        {r}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Module 4: Technical Layer Indicator (Integrated & Detailed) */}
-            <div className="space-y-4">
-              <h3 className="font-sans text-sm text-white font-bold flex items-center gap-2" dir="rtl">
-                <Layers className="w-4 h-4 text-[#ffff00]" /> مؤشر الطبقات التقني (Technical Layers)
-              </h3>
-              <div className="bg-[#111827] border border-[#1f2937] rounded-lg p-6 space-y-4">
-                {[
-                  { label: 'تحليل البصمة (Sonic DNA)', val: '100%' },
-                  { label: 'رسم الشبكة (Grid Mapping)', val: '100%' },
-                  { label: 'التوافق الصوتي (Phonetic)', val: '94%' },
-                  { label: 'مزامنة الجيب (Pocket Sync)', val: 'Active' },
-                  { label: 'ضغط التدفق (Flow Pressure)', val: 'Stable' },
-                  { label: 'المزامنة الطيفية (Spectral)', val: 'Ready' }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-[10px]">
-                    <span className="text-[#9ca3af]">{item.label}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#00ff00] font-bold">{item.val}</span>
-                      <CheckCircle2 className="w-3 h-3 text-[#00ff00]" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-
-          {/* Module 5: Protocol Summary */}
-          {blueprint.dynamicMap?.sections && (
-            <div className="space-y-4">
-              <h3 className="font-sans text-sm text-white font-bold flex items-center gap-2" dir="rtl">
-                <Activity className="w-4 h-4 text-[#00ffff]" /> مخطط المسار (Protocol Architecture)
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {blueprint.dynamicMap.sections.map((section: any, idx: number) => (
-                  <div key={idx} className="bg-[#111827] border border-[#1f2937] rounded-lg p-4 text-center">
-                    <div className="text-[10px] text-[#6b7280] uppercase mb-1">{section.name || section.type}</div>
-                    <div className="text-lg font-bold text-white">{section.bars || 8} BARS</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
         </div>
       </div>
+
+      {/* ── Song Structure ── */}
+      <div className="bg-[#0D1017] border border-white/[0.05] rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Layout className="w-3.5 h-3.5 text-amber-400/60" />
+            <span className="text-[9px] font-bold text-amber-400/60 uppercase tracking-widest">SONG_STRUCTURE</span>
+          </div>
+          <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[9px] text-white/25 hover:text-white/50 transition-colors">
+            <RefreshCw className="w-3 h-3" />
+            Reset
+          </button>
+        </div>
+
+        {/* Timeline */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {STRUCTURE_BLOCKS.map((block, i) => {
+            const colorMap: Record<string, string> = {
+              amber:   'bg-amber-500/20 border-amber-500/30 text-amber-400',
+              violet:  'bg-violet-500/20 border-violet-500/30 text-violet-400',
+              emerald: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400',
+              blue:    'bg-blue-500/20 border-blue-500/30 text-blue-400',
+            };
+            const isActive = activeBlock === block.id;
+            return (
+              <motion.button
+                key={block.id}
+                whileHover={{ y: -2 }}
+                onClick={() => setBlock(isActive ? null : block.id)}
+                style={{ flexBasis: `${(block.bars / 64) * 100}%`, minWidth: 64 }}
+                className={`relative border rounded-xl px-3 py-3 text-center transition-all duration-300 ${
+                  isActive
+                    ? colorMap[block.color] + ' shadow-lg'
+                    : 'bg-white/[0.03] border-white/[0.06] text-white/25 hover:border-white/10 hover:text-white/40'
+                }`}
+              >
+                <div className="text-[8px] font-black uppercase tracking-wider mb-1">{block.label}</div>
+                <div className="text-[7px] font-mono opacity-60">{block.bars}B</div>
+                {isActive && (
+                  <motion.div layoutId="block-indicator" className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-current" />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Waveform-style visualizer */}
+        <div className="flex items-end gap-[2px] h-20 bg-white/[0.02] rounded-xl p-3 overflow-hidden">
+          {Array.from({ length: 120 }).map((_, i) => {
+            const h = 15 + Math.abs(Math.sin(i * 0.3 + i * 0.1) * 65 + Math.cos(i * 0.7) * 25);
+            return (
+              <motion.div
+                key={i}
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ delay: i * 0.005, duration: 0.4 }}
+                className="flex-1 rounded-full origin-bottom bg-gradient-to-t from-amber-500/60 to-amber-300/20"
+                style={{ height: `${h}%` }}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Section Detail ── */}
+      <AnimatePresence>
+        {activeBlock && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="bg-[#0D1017] border border-amber-500/10 rounded-2xl p-6"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">
+                {STRUCTURE_BLOCKS.find(b => b.id === activeBlock)?.label} — Details
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {['Rhyme Density', 'Flow Intensity', 'Syllable Count', 'Complexity'].map((metric, i) => (
+                <div key={metric} className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
+                  <p className="text-[9px] text-white/25 mb-2">{metric}</p>
+                  <div className="text-2xl font-black text-white">{[78, 92, 16, 65][i]}</div>
+                  <div className="mt-2 h-0.5 bg-white/[0.04] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${[78, 92, 80, 65][i]}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
+}
+
+function RhymePreview({ scheme }: { scheme: string }) {
+  const lines = scheme === 'AABB'   ? ['كلمة — كلمة (A)', 'قافية — قافية (A)', 'جملة — جملة (B)', 'صوت — صوت (B)']
+              : scheme === 'ABAB'   ? ['شعر — شعر (A)', 'حياة — حياة (B)', 'فكر — فكر (A)', 'هواء — هواء (B)']
+              : scheme === 'ABBA'   ? ['ليل — ليل (A)', 'نور — نور (B)', 'نار — نار (B)', 'دور — دور (A)']
+              : ['...', '...', '...', '...'];
+  const colors: Record<string, string> = { A: 'text-violet-400', B: 'text-emerald-400', C: 'text-blue-400' };
+  return (
+    <div className="space-y-1">
+      {lines.map((l, i) => {
+        const letter = l.slice(-2, -1);
+        return (
+          <div key={i} className={`text-[10px] font-mono ${colors[letter] ?? 'text-white/25'}`}>{l}</div>
+        );
+      })}
+    </div>
+  );
+}

@@ -1,0 +1,12 @@
+// الرابط الرسمي لسيرفر مقام على Render
+export const API_BASE_URL = "https://maqam-backend-1.onrender.com.";
+
+// وظيفة مساعدة لإرسال النصوص للتحليل
+export const analyzeText = async (content: string) => {
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
+            method: "POST",
+                headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: content }),
+      });
+        return response.json();
+};

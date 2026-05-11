@@ -1,0 +1,60 @@
+/* استدعاء الخطوط: IBM Plex Arabic للنصوص العربية و JetBrains Mono للبيانات التقنية */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* لوحة الألوان الأساسية الخاصة بـ MAQAM */
+    --background: 8, 10, 15; /* #080A0F */
+    --surface: 13, 16, 23; /* #0D1017 */
+    --gold-accent: 245, 158, 11; /* Gold */
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* الخلفية الداكنة التي تليق بمختبر صوتي */
+    background-color: #080a0f;
+    color: #ffffff;
+    font-family: 'Inter', 'IBM Plex Sans Arabic', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* تنسيق النصوص العربية لتكون متناسقة مع واجهة النظام */
+  .font-arabic {
+    font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    line-height: 1.6;
+  }
+
+  /* تنسيق الأرقام والبيانات التقنية */
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace !important;
+  }
+}
+
+@layer components {
+  /* شريط تمرير (Scrollbar) انسيابي لا يقطع تجربة المستخدم */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.4);
+  }
+}

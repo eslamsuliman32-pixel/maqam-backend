@@ -29,6 +29,7 @@ export interface Bar extends BarAnalysis {
   dialect: ArabicDialect;
   emotion?: string;
   isFavorite: boolean;
+  rating?: number; // User-assigned rating 0-100
   isPermanent?: boolean;
   createdAt: string;
   tags: string[];

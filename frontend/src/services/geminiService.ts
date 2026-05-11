@@ -842,6 +842,13 @@ ${bars.map(b => `
       };
     }
   }
+
+  async generateContent(prompt: string): Promise<any> {
+    return await callGeminiWithRetry({
+      model: "gemini-3-flash-preview",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+  }
 }
 
 export const geminiService = new GeminiService();

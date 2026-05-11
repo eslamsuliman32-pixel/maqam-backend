@@ -47,6 +47,7 @@ interface RepositoryStore {
   updateBatch: (updates: { id: string; updates: Partial<Bar> }[]) => void;
   deleteBar: (id: string) => void;
   toggleFavorite: (id: string) => void;
+  updateRating: (id: string, rating: number) => void;
   toggleSelection: (id: string) => void;
   setSelection: (ids: string[]) => void;
   clearSelection: () => void;
@@ -407,6 +408,14 @@ export const useRepositoryStore = create<RepositoryStore>()(
 
       toggleFavorite: (id) => set((state) => {
         const bars = state.bars.map((bar) => (bar.id === id ? { ...bar, isFavorite: !bar.isFavorite } : bar));
+        return {
+          bars,
+          filteredBars: applyDerivedFilters(bars, state),
+        };
+      }),
+
+      updateRating: (id, rating) => set((state) => {
+        const bars = state.bars.map((bar) => (bar.id === id ? { ...bar, rating } : bar));
         return {
           bars,
           filteredBars: applyDerivedFilters(bars, state),

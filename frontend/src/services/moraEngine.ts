@@ -28,6 +28,9 @@ export interface MoraProfile {
   totalMorae: number;
   sonicWeight: number;
   rhythmicWeight: number;
+  syllables?: number;
+  rhythm?: number;
+  rhymeScore?: number;
 }
 
 // ─── NEW: Phonetic Property Interface ────────────────────────────────────────
@@ -240,7 +243,10 @@ export class MoraEngine {
     const totalMorae   = units.reduce((sum, u) => sum + u.morae, 0);
     const sonicWeight  = this.computeSonicWeight(units, totalMorae);
     const rhythmicWeight = this.computeRhythmicWeight(units, totalMorae);
-    return { units, totalMorae, sonicWeight, rhythmicWeight };
+    const syllables = units.length;
+    const rhythm = rhythmicWeight;
+    const rhymeScore = Math.min(100, totalMorae * 10); // placeholder
+    return { units, totalMorae, sonicWeight, rhythmicWeight, syllables, rhythm, rhymeScore };
   }
 
   getStressCode(text: string): string {
